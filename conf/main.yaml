@@ -1,0 +1,16 @@
+defaults:
+  - site: virginmedia
+  - _self_
+logging_level: INFO
+
+captcha_api_key: '5e94e094a112b044a2352393ea8d169d'
+run_locally: true
+
+hydra:
+  job_logging:
+    formatters:
+      simple:
+        format: '[%(asctime)s] [%(levelname)-7s] %(threadName)-22s :: %(message)-100s # [%(module)s(%(funcName)s):%(lineno)d]'
+    handlers:
+      file:
+        encoding: 'utf-8'
