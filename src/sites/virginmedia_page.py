@@ -20,6 +20,7 @@ class VirginMediaPage(BasePage):
     _latest_bill_button_locator = "//vm-button[@data-cy='view-bill-paid-pending']"
     _close_bill_explainer_locator = "//button[starts-with(@class, 'tour-tooltip-header__close')]"
     _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']"
+    _is_credentials_is_correct_locator = "//*[contains(text(), ' Your email or password was incorrect')]"
 
     @property
     def login_continue_button(self) -> WebElement:
@@ -40,6 +41,27 @@ class VirginMediaPage(BasePage):
     @property
     def donwload_pdf_button(self) -> WebElement:
         return self._get_element(self._download_pdf_button_locator)
+
+    @property
+    def is_credentials_is_correct_element(self) -> WebElement:
+        return self._get_element(self._is_credentials_is_correct_locator)
+
+    def _is_credentials_is_correct(self) -> bool:
+        try:
+            self.is_credentials_is_correct_element
+            return False
+        except Exception:
+            return True
+
+    def _accept_cookies_policy(self):
+        try:
+            logging.info(f"Trying to accept cookies")
+            if self._accept_cookies_locator != '':
+                self._accept_cookies_button.click()
+                time.sleep(1)
+            logging.info(f"Cookies policy accepted")
+        except Exception:
+            logging.info(f"No cookies policy")
 
     def _close_bill_explainer(self):
         try:
@@ -64,6 +86,7 @@ class VirginMediaPage(BasePage):
         logging.info(f"Password confirmed")
         self._solve_captcha()
         logging.info(f"Captcha was solved")
+        assert self._is_credentials_is_correct(), "Wrong credentials"
 
     def run(self) -> NoReturn:
         self.do_authorisation()

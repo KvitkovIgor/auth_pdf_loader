@@ -69,15 +69,9 @@ class BasePage(ABC):
     def _accept_cookies_button(self) -> WebElement:
         return self._get_element(self._accept_cookies_locator)
 
+    @abstractmethod
     def _accept_cookies_policy(self):
-        try:
-            logging.info(f"Trying to accept cookies")
-            if self._accept_cookies_locator != '':
-                self._accept_cookies_button.click()
-            logging.info(f"Cookies policy accepted")
-        except Exception:
-            logging.info(f"No cookies policy")
-            pass
+        pass
 
     # Web elements
     @property

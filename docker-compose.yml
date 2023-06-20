@@ -4,6 +4,7 @@ services:
     image: seleniarm/node-chromium:4.0.0-beta-1-20210215
     volumes:
       - /dev/shm:/dev/shm
+      - ./downloads:/home/seluser/Downloads
     depends_on:
       - seleniarm-hub
     environment:
