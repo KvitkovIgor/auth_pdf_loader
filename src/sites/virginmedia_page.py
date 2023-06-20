@@ -55,14 +55,21 @@ class VirginMediaPage(BasePage):
 
     def do_authorisation(self):
         self.login_form_button.click()
+        logging.info(f"Input login: {self._login}")
         self.login_input = self._login
+        logging.info(f"Login confirmed")
         self.login_continue_button.click()
+        logging.info(f"Input password: {self._password}")
         self.password_input = self._password
+        logging.info(f"Password confirmed")
         self._solve_captcha()
+        logging.info(f"Captcha was solved")
 
     def run(self) -> NoReturn:
         self.do_authorisation()
-        time.sleep(100)
+        logging.info(f"Opening latest bill page")
         self.latest_bill_button.click()
+        logging.info(f"Closing bill exaplainer")
         self._close_bill_explainer()
+        logging.info(f"Downloading latest bill")
         self.donwload_pdf_button.click()

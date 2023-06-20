@@ -27,19 +27,9 @@ class BasePage(ABC):
         self._is_docker_runner = "IS_DOCKER" in os.environ
 
         logging.info(f"Docker runner is set to {self._is_docker_runner}")
-        self._driver = webdriver.Chrome(options=chrome_options) if not self._is_docker_runner else webdriver.Remote(options=webdriver.ChromeOptions(), command_executor="http://automation_hub:4444/wd/hub")
+        self._driver = webdriver.Chrome(options=chrome_options) if not self._is_docker_runner else webdriver.Remote(options=chrome_options, command_executor="http://seleniarm-hub:4444/wd/hub")
 
         logging.info(f"Driver connected to the Selenium")
-        stealth(self._driver,
-            languages=["en-US", "en"],
-            vendor="Google Inc.",
-            platform="Win32",
-            webgl_vendor="Intel Inc.",
-            renderer="Intel Iris OpenGL Engine",
-            fix_hairline=True,
-        )
-
-        logging.info(f"Driver set up for stealth mode")
         self._captcha_solver = TwoCaptcha(captcha_api_key)
         self._driver.get(self._auth_page)
         logging.info(f"Opened auth page {self._auth_page}")
@@ -81,9 +71,12 @@ class BasePage(ABC):
 
     def _accept_cookies_policy(self):
         try:
+            logging.info(f"Trying to accept cookies")
             if self._accept_cookies_locator != '':
                 self._accept_cookies_button.click()
+            logging.info(f"Cookies policy accepted")
         except Exception:
+            logging.info(f"No cookies policy")
             pass
 
     # Web elements
