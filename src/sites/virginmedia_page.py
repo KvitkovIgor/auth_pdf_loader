@@ -86,7 +86,6 @@ class VirginMediaPage(BasePage):
         self.login_input = self._login
         logging.info(f"Login confirmed")
         self.login_continue_button.click()
-        logging.info(f"Input password: {self._password}")
         self.password_input = self._password
         logging.info(f"Password confirmed")
         self._solve_captcha()
