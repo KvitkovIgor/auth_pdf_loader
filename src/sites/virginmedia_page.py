@@ -19,7 +19,7 @@ class VirginMediaPage(BasePage):
     _captcha_iframe = "//div[@id='recaptcha']"
     _latest_bill_button_locator = "//vm-button[@data-cy='view-bill-paid-pending']"
     _close_bill_explainer_locator = "//button[starts-with(@class, 'tour-tooltip-header__close')]"
-    _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']"
+    _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']//button"
     _is_credentials_is_correct_locator = "//*[contains(text(), ' Your email or password was incorrect')]"
 
     @property
