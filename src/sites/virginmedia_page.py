@@ -3,6 +3,11 @@ import logging
 from typing import NoReturn
 from .base_page import BasePage
 from selenium.webdriver.remote.webelement import WebElement
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 
 class VirginMediaPage(BasePage):
     def __init__(self, api_key: str, login: str, password: str):
@@ -19,7 +24,7 @@ class VirginMediaPage(BasePage):
     _captcha_iframe = "//div[@id='recaptcha']"
     _latest_bill_button_locator = "//vm-button[@data-cy='view-bill-paid-pending']"
     _close_bill_explainer_locator = "//button[starts-with(@class, 'tour-tooltip-header__close')]"
-    _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']"
+    _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']//button"
     _is_credentials_is_correct_locator = "//*[contains(text(), ' Your email or password was incorrect')]"
 
     @property
@@ -81,7 +86,6 @@ class VirginMediaPage(BasePage):
         self.login_input = self._login
         logging.info(f"Login confirmed")
         self.login_continue_button.click()
-        logging.info(f"Input password: {self._password}")
         self.password_input = self._password
         logging.info(f"Password confirmed")
         self._solve_captcha()
@@ -95,4 +99,8 @@ class VirginMediaPage(BasePage):
         logging.info(f"Closing bill exaplainer")
         self._close_bill_explainer()
         logging.info(f"Downloading latest bill")
+
+        wait = WebDriverWait(self._driver, 10)  # wait up to 10 seconds
+        element = wait.until(EC.element_to_be_clickable((By.XPATH, self._download_pdf_button_locator)))
+
         self.donwload_pdf_button.click()

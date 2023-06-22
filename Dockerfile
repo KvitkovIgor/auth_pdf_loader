@@ -12,10 +12,6 @@ RUN chmod +x wait-for-it.sh
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy the folder with the tests into the container
-COPY src src/
-COPY conf conf/
-
 # Copy the waiter
 RUN apk add bash
 RUN apk add tk

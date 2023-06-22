@@ -38,6 +38,9 @@ services:
     ]
     networks:
       - parser_network
+    volumes:
+      - ./src:/pdf/src
+      - ./conf:/pdf/conf
 
 networks:
   parser_network:
