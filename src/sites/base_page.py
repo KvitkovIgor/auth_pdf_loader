@@ -22,6 +22,19 @@ class BasePage(ABC):
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument("--enable-javascript")
+        
+        # Set Chrome to automatically download files to the specified directory and disable the pdfjs viewer
+        chrome_options.add_experimental_option(
+            "prefs",
+                {
+                    "download.default_directory": "/home/seluser/Downloads",  # Set download directory.
+                    "download.prompt_for_download": False,  # Automatically download files without prompting.
+                    "download.directory_upgrade": True,  # Use the specified download directory.
+                    "plugins.always_open_pdf_externally": True,  # Automatically open PDFs.
+                    "pdfjs.disabled": True  # Disable the internal PDF viewer.
+                },
+        )
+        
         self._login = login
         self._password = password
         self._is_docker_runner = "IS_DOCKER" in os.environ
