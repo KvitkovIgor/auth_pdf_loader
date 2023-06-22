@@ -3,6 +3,11 @@ import logging
 from typing import NoReturn
 from .base_page import BasePage
 from selenium.webdriver.remote.webelement import WebElement
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 
 class VirginMediaPage(BasePage):
     def __init__(self, api_key: str, login: str, password: str):
@@ -95,4 +100,8 @@ class VirginMediaPage(BasePage):
         logging.info(f"Closing bill exaplainer")
         self._close_bill_explainer()
         logging.info(f"Downloading latest bill")
+
+        wait = WebDriverWait(self._driver, 10)  # wait up to 10 seconds
+        element = wait.until(EC.element_to_be_clickable((By.XPATH, self._download_pdf_button_locator)))
+
         self.donwload_pdf_button.click()
