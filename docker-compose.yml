@@ -27,7 +27,6 @@ services:
       - parser_network
 
   runner_downloader:
-    container_name: runner_downloader
     build: .
     depends_on:
      - seleniarm-hub

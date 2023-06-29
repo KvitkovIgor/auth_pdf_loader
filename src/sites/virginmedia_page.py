@@ -104,3 +104,4 @@ class VirginMediaPage(BasePage):
         element = wait.until(EC.element_to_be_clickable((By.XPATH, self._download_pdf_button_locator)))
 
         self.donwload_pdf_button.click()
+        time.sleep(10)
