@@ -2,3 +2,4 @@
 outputs/*
 downloads/*
 *.log
+*.env

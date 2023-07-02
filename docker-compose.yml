@@ -29,9 +29,10 @@ services:
   runner_downloader:
     build: .
     depends_on:
-     - seleniarm-hub
+      - seleniarm-hub
     environment:
-    - IS_DOCKER=True
+      CAPTCHA_SERVICE_API_KEY: ${CAPTCHA_SERVICE_API_KEY}
+      IS_DOCKER: true
     ports:
       - "8080:8080"
     entrypoint: [

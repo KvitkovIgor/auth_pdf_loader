@@ -5,7 +5,7 @@ import shutil
 from omegaconf import DictConfig
 from sites import VirginMediaPage
 from dotenv import load_dotenv
-from flask import Flask, current_app, jsonify
+from flask import Flask, current_app, request
 
 
 IMPLICITY_WAIT: int = 15
@@ -24,11 +24,15 @@ def list_files_in_dir(dir):
 
 @app.route('/virginmedia', methods=['POST'])
 def run_script():
-    cfg = current_app.config["config"]
     old_list_files = list_files_in_dir(f'{repo_path()}/downloads')
+    payload = request.get_json()
 
     try:
-        site = VirginMediaPage(cfg.captcha_api_key, cfg.virginmedia.login, cfg.virginmedia.password)
+        site = VirginMediaPage(
+            os.environ.get('CAPTCHA_SERVICE_API_KEY'),
+            payload['username'],
+            payload['password']
+        )
         site.run()
         new_list_files = list_files_in_dir(f'{repo_path()}/downloads')
 
@@ -44,7 +48,6 @@ def run_script():
 
 @hydra.main(config_path=f'{repo_path()}/conf', config_name='main')
 def main(cfg: DictConfig):
-    app.config["config"] = cfg
     app.run(host=cfg.server.host, port=cfg.server.port, debug=True)
 
 if __name__ == "__main__":
