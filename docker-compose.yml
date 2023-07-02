@@ -14,7 +14,7 @@ services:
     ports:
       - "6900:5900"
     networks:
-      - parser_network
+      - main_network
 
   seleniarm-hub:
     image: seleniarm/hub:4.0.0-beta-1-20210215
@@ -24,7 +24,7 @@ services:
       - "4443:4443"
       - "4444:4444"
     networks:
-      - parser_network
+      - main_network
 
   runner_downloader:
     build: .
@@ -32,15 +32,30 @@ services:
      - seleniarm-hub
     environment:
     - IS_DOCKER=True
+    ports:
+      - "8080:8080"
     entrypoint: [
         "./wait-for-it.sh", "-t", "20", "seleniarm-hub:4444", "--", "python3", "src/main.py"
     ]
     networks:
-      - parser_network
+      - main_network
     volumes:
       - ./src:/pdf/src
       - ./conf:/pdf/conf
 
+  huginn:
+    image: huginn/huginn
+    ports:
+      - 3000:3000
+    restart: always
+    volumes:
+      - huginn-data:/var/lib/mysql
+    networks:
+      - main_network
+
+volumes:
+  huginn-data:
+
 networks:
-  parser_network:
+  main_network:
     driver: bridge

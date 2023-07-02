@@ -90,9 +90,8 @@ class VirginMediaPage(BasePage):
         logging.info(f"Password confirmed")
         self._solve_captcha()
         logging.info(f"Captcha was solved")
-        assert self._is_credentials_is_correct(), "Wrong credentials"
 
-    def run(self) -> NoReturn:
+    def run(self):
         self.do_authorisation()
         logging.info(f"Opening latest bill page")
         self.latest_bill_button.click()
