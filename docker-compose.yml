@@ -1,7 +1,35 @@
 version: "3"
 services:
+  huginn:
+    container_name: huginn
+    image: ghcr.io/huginn/huginn
+    ports:
+      - 3000:3000
+    restart: always
+    environment:
+      - SEED_USERNAME=${SEED_USERNAME}
+      - SEED_PASSWORD=${SEED_PASSWORD}
+      - ENABLE_INSECURE_AGENTS=true
+      - APP_SECRET_TOKEN=${APP_SECRET_TOKEN}
+      - DOMAIN=localhost
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - SMTP_DOMAIN=${SMTP_DOMAIN}
+      - SMTP_USER_NAME=${SMTP_USER_NAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_AUTHENTICATION=plain
+      - SMTP_ENABLE_STARTTLS_AUTO=true
+      - SMTP_SSL=true
+      - EMAIL_FROM_ADDRESS=${EMAIL_FROM_ADDRESS}
+    volumes:
+      - huginn-data:/var/lib/mysql
+    networks:
+      - main_network
+
   chrome0:
-    image: seleniarm/node-chromium:4.0.0-beta-1-20210215
+    container_name: selenium-node
+    image: selenium/node-chrome:4.10.0
     volumes:
       - ./downloads:/home/seluser/Downloads
       - /dev/shm:/dev/shm
@@ -11,14 +39,15 @@ services:
       - SE_EVENT_BUS_HOST=seleniarm-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - VNC_NO_PASSWORD=1
     ports:
       - "6900:5900"
     networks:
       - main_network
 
   seleniarm-hub:
-    image: seleniarm/hub:4.0.0-beta-1-20210215
-    container_name: seleniarm-hub-4.0.0-beta-1-20210215
+    image: selenium/hub:4.10.0
+    container_name: selenium-hub
     ports:
       - "4442:4442"
       - "4443:4443"
@@ -26,8 +55,9 @@ services:
     networks:
       - main_network
 
-  runner_downloader:
-    build: .
+  task_runner:
+    container_name: task_runner
+    build: Task_Runner/
     depends_on:
       - seleniarm-hub
     environment:
@@ -41,19 +71,9 @@ services:
     networks:
       - main_network
     volumes:
-      - ./downloads:/pdf/downloads
-      - ./src:/pdf/src
-      - ./conf:/pdf/conf
-
-  huginn:
-    image: huginn/huginn
-    ports:
-      - 3000:3000
-    restart: always
-    volumes:
-      - huginn-data:/var/lib/mysql
-    networks:
-      - main_network
+      - ./src:/app/src
+      - ./conf:/app/conf
+      - ./downloads:/app/downloads
 
 volumes:
   huginn-data:
