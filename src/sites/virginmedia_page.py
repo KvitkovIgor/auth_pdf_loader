@@ -90,8 +90,9 @@ class VirginMediaPage(BasePage):
         logging.info(f"Password confirmed")
         self._solve_captcha()
         logging.info(f"Captcha was solved")
+        assert self._is_credentials_is_correct(), "Wrong credentials"
 
-    def run(self):
+    def run(self) -> NoReturn:
         self.do_authorisation()
         logging.info(f"Opening latest bill page")
         self.latest_bill_button.click()
@@ -102,5 +103,11 @@ class VirginMediaPage(BasePage):
         wait = WebDriverWait(self._driver, 10)  # wait up to 10 seconds
         element = wait.until(EC.element_to_be_clickable((By.XPATH, self._download_pdf_button_locator)))
 
+        # add logic to get banners & popups out of the way.
+        #click class="CRO-528--banner-close"
+        #click class="QSIWebResponsiveDialog-Layout1-SI_ezf2xkiB7FZrb38_close-btn"
+
+        time.sleep(2)
         self.donwload_pdf_button.click()
-        time.sleep(10)
+        time.sleep(2)
+

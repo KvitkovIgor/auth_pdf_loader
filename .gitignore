@@ -1,4 +1,6 @@
 **/__pycache__/
 outputs/*
 downloads/*
+!downloads/README.md
 *.log
+.env
