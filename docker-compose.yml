@@ -3,8 +3,8 @@ services:
   chrome0:
     image: seleniarm/node-chromium:4.0.0-beta-1-20210215
     volumes:
-      - /dev/shm:/dev/shm
       - ./downloads:/home/seluser/Downloads
+      - /dev/shm:/dev/shm
     depends_on:
       - seleniarm-hub
     environment:
@@ -40,6 +40,7 @@ services:
     networks:
       - main_network
     volumes:
+      - ./downloads:/pdf/downloads
       - ./src:/pdf/src
       - ./conf:/pdf/conf
 
