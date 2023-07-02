@@ -1,11 +1,5 @@
 logging_level: INFO
 
-captcha_api_key: '5e94e094a112b044a2352393ea8d169d'
-
-virginmedia:
-  login: 'example@gmail.com'
-  password: 'qqqqqqq'
-
 run_locally: true
 
 server:
