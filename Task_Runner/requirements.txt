@@ -4,3 +4,4 @@ selenium_stealth
 2captcha-python
 omegaconf
 python-dotenv
+Flask
