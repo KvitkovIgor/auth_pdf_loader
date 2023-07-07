@@ -7,6 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from urllib.parse import urlparse, parse_qs
 
 
 class VirginMediaPage(BasePage):
@@ -26,6 +27,38 @@ class VirginMediaPage(BasePage):
     _close_bill_explainer_locator = "//button[starts-with(@class, 'tour-tooltip-header__close')]"
     _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']//button"
     _is_credentials_is_correct_locator = "//*[contains(text(), ' Your email or password was incorrect')]"
+    _captcha_iframe = "//iframe[starts-with(@src, 'https://www.google.com/recaptcha/api2/anchor')]"
+
+    @property
+    def _accept_cookies_button(self) -> WebElement:
+        return self._get_element(self._accept_cookies_locator)
+
+    # Web elements
+    @property
+    def login_input(self) -> WebElement:
+        return self._get_element(self._login_input_locator)
+
+    @property
+    def password_input(self) -> WebElement:
+        return self._get_element(self._password_input_locator)
+
+    @property
+    def login_form_button(self) -> WebElement:
+        return self._get_element(self._login_form_locator)
+
+    @login_input.setter
+    def login_input(self, login: str) -> NoReturn:
+        self.login_input.clear()
+        self.login_input.send_keys(login)
+
+    @password_input.setter
+    def password_input(self, password: str) -> NoReturn:
+        self.password_input.clear()
+        self.password_input.send_keys(password)
+
+    @property
+    def _recaptcha_response_element(self) -> WebElement:
+        return self._get_element("//*[@id='g-recaptcha-response']")
 
     @property
     def login_continue_button(self) -> WebElement:
@@ -37,7 +70,8 @@ class VirginMediaPage(BasePage):
 
     @property
     def _capthca_site_key(self) -> str:
-        return self._get_element(self._captcha_iframe).get_attribute('data-sitekey')
+        site_key_element = self._get_element(self._captcha_iframe)
+        return parse_qs(urlparse(site_key_element.get_attribute("src")).query)['k'][0]
 
     @property
     def close_bill_explainer_button(self) -> WebElement:
@@ -51,6 +85,7 @@ class VirginMediaPage(BasePage):
     def is_credentials_is_correct_element(self) -> WebElement:
         return self._get_element(self._is_credentials_is_correct_locator)
 
+    # check is credentials are correct
     def _is_credentials_is_correct(self) -> bool:
         try:
             self.is_credentials_is_correct_element
@@ -58,6 +93,7 @@ class VirginMediaPage(BasePage):
         except Exception:
             return True
 
+    # accepting cookies
     def _accept_cookies_policy(self):
         try:
             logging.info(f"Trying to accept cookies")
@@ -74,13 +110,25 @@ class VirginMediaPage(BasePage):
         except Exception:
             pass
 
+    # solving captcha method
     def _solve_captcha(self):
         logging.info(f"Solving captcha: {str(self._capthca_site_key)}")
         code = self._captcha_solver.recaptcha(sitekey=self._capthca_site_key, url=self._driver.current_url, invisible=1)['code']
         logging.info(f"Captcha was solved {code}")
         self._driver.execute_script(f'document.getElementById("g-recaptcha-response").innerHTML = "{code}"; submitForm();')
 
-    def do_authorisation(self):
+    def run(self) -> NoReturn:
+        # opening auth page
+        self._driver.get(self._auth_page)
+        logging.info(f"Opened auth page {self._auth_page}")
+
+        # trying to accept cookies
+        self._driver.implicitly_wait(30)
+        self._accept_cookies_policy()
+        logging.info("Cookies accepted")
+        time.sleep(2)
+
+        # doing authorisation
         self.login_form_button.click()
         logging.info(f"Input login: {self._login}")
         self.login_input = self._login
@@ -92,10 +140,10 @@ class VirginMediaPage(BasePage):
         logging.info(f"Captcha was solved")
         assert self._is_credentials_is_correct(), "Wrong credentials"
 
-    def run(self) -> NoReturn:
-        self.do_authorisation()
         logging.info(f"Opening latest bill page")
         self.latest_bill_button.click()
+
+        # need to close bill explainer if it appears
         logging.info(f"Closing bill exaplainer")
         self._close_bill_explainer()
         logging.info(f"Downloading latest bill")

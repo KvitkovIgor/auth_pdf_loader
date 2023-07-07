@@ -1,18 +1,16 @@
 import logging
 import time
 import os
-from abc import abstractmethod, abstractproperty, ABC
 from tkinter import E
 from typing import NoReturn
 from twocaptcha import TwoCaptcha
-from urllib.parse import urlparse, parse_qs
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium_stealth import stealth
 
-class BasePage(ABC):
+class BasePage:
     """
     Base class to initialize the base page that will be called from all pages
     """
@@ -41,94 +39,13 @@ class BasePage(ABC):
 
         logging.info(f"Docker runner is set to {self._is_docker_runner}")
         self._driver = webdriver.Chrome(options=chrome_options) if not self._is_docker_runner else webdriver.Remote(options=chrome_options, command_executor="http://seleniarm-hub:4444/wd/hub")
-
         logging.info(f"Driver connected to the Selenium")
         self._captcha_solver = TwoCaptcha(captcha_api_key)
-        self._driver.get(self._auth_page)
-        logging.info(f"Opened auth page {self._auth_page}")
-        self._driver.implicitly_wait(30)
-        self._accept_cookies_policy()
-        logging.info("Page set up")
+
 
     def __del__(self):
         self._driver.close()
         self._driver.quit()
 
-    @abstractproperty
-    def _auth_page(self) -> str:
-        return ''
-
-    @abstractproperty
-    def _login_input_locator(self) -> str:
-        return ''
-
-    @abstractproperty
-    def _password_input_locator(self) -> str:
-        return ''
-
-    @abstractproperty
-    def _login_form_locator(self) -> str:
-        return ''
-
-    @abstractproperty
-    def _accept_cookies_locator(self) -> str:
-        return ''
-
-    @abstractproperty
-    def _captcha_iframe(self) -> str:
-        return "//iframe[starts-with(@src, 'https://www.google.com/recaptcha/api2/anchor')]"
-
-    @property
-    def _accept_cookies_button(self) -> WebElement:
-        return self._get_element(self._accept_cookies_locator)
-
-    @abstractmethod
-    def _accept_cookies_policy(self):
-        pass
-
-    # Web elements
-    @property
-    def login_input(self) -> WebElement:
-        return self._get_element(self._login_input_locator)
-
-    @property
-    def password_input(self) -> WebElement:
-        return self._get_element(self._password_input_locator)
-
-    @property
-    def login_form_button(self) -> WebElement:
-        return self._get_element(self._login_form_locator)
-
-    @login_input.setter
-    def login_input(self, login: str) -> NoReturn:
-        self.login_input.clear()
-        self.login_input.send_keys(login)
-
-    @password_input.setter
-    def password_input(self, password: str) -> NoReturn:
-        self.password_input.clear()
-        self.password_input.send_keys(password)
-
-    @abstractproperty
-    def _capthca_site_key(self) -> str:
-        site_key_element = self._get_element(self._captcha_iframe)
-        return parse_qs(urlparse(site_key_element.get_attribute("src")).query)['k'][0]
-
-    @property
-    def _recaptcha_response_element(self) -> WebElement:
-        return self._get_element("//*[@id='g-recaptcha-response']")
-
     def _get_element(self, xpath: str) -> WebElement:
         return self._driver.find_element(By.XPATH, xpath)
-
-    @abstractmethod
-    def _solve_captcha(self) -> NoReturn:
-        pass
-
-    @abstractmethod
-    def do_authorisation(self):
-        pass
-
-    @abstractmethod
-    def run(self) -> NoReturn:
-        pass
