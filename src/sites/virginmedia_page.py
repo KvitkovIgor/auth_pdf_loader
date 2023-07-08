@@ -7,6 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from urllib.parse import urlparse, parse_qs
 
 
 class VirginMediaPage(BasePage):
@@ -26,76 +27,74 @@ class VirginMediaPage(BasePage):
     _close_bill_explainer_locator = "//button[starts-with(@class, 'tour-tooltip-header__close')]"
     _download_pdf_button_locator = "//vm-button[@data-cy='downloadPDFBtn']//button"
     _is_credentials_is_correct_locator = "//*[contains(text(), ' Your email or password was incorrect')]"
+    _captcha_iframe = "//iframe[starts-with(@src, 'https://www.google.com/recaptcha/api2/anchor')]"
 
-    @property
-    def login_continue_button(self) -> WebElement:
-        return self._get_element(self._login_continue_locator)
-
-    @property
-    def latest_bill_button(self) -> WebElement:
-        return self._get_element(self._latest_bill_button_locator)
-
-    @property
-    def _capthca_site_key(self) -> str:
-        return self._get_element(self._captcha_iframe).get_attribute('data-sitekey')
-
-    @property
-    def close_bill_explainer_button(self) -> WebElement:
-        return self._get_element(self._close_bill_explainer_locator)
-
-    @property
-    def donwload_pdf_button(self) -> WebElement:
-        return self._get_element(self._download_pdf_button_locator)
-
-    @property
-    def is_credentials_is_correct_element(self) -> WebElement:
-        return self._get_element(self._is_credentials_is_correct_locator)
-
+    # check is credentials are correct
     def _is_credentials_is_correct(self) -> bool:
         try:
-            self.is_credentials_is_correct_element
+            self._get_element(self._is_credentials_is_correct_locator)
             return False
         except Exception:
             return True
 
+    # accepting cookies
     def _accept_cookies_policy(self):
         try:
             logging.info(f"Trying to accept cookies")
-            if self._accept_cookies_locator != '':
-                self._accept_cookies_button.click()
-                time.sleep(1)
+            self._get_element(self._accept_cookies_locator).click()
             logging.info(f"Cookies policy accepted")
         except Exception:
             logging.info(f"No cookies policy")
 
     def _close_bill_explainer(self):
         try:
-            self.close_bill_explainer_button.click()
+            self._get_element(self._close_bill_explainer_locator).click()
         except Exception:
             pass
 
+    # solving captcha method
     def _solve_captcha(self):
-        logging.info(f"Solving captcha: {str(self._capthca_site_key)}")
-        code = self._captcha_solver.recaptcha(sitekey=self._capthca_site_key, url=self._driver.current_url, invisible=1)['code']
+        captcha_site_key = parse_qs(urlparse(self._get_element(self._captcha_iframe).get_attribute("src")).query)['k'][0]
+        logging.info(f"Solving captcha: {str(captcha_site_key)}")
+        code = self._captcha_solver.recaptcha(sitekey=captcha_site_key, url=self._driver.current_url, invisible=1)['code']
         logging.info(f"Captcha was solved {code}")
         self._driver.execute_script(f'document.getElementById("g-recaptcha-response").innerHTML = "{code}"; submitForm();')
 
-    def do_authorisation(self):
-        self.login_form_button.click()
+    def run(self) -> NoReturn:
+        # opening auth page
+        self._driver.get(self._auth_page)
+        logging.info(f"Opened auth page {self._auth_page}")
+
+        # trying to accept cookies
+        self._driver.implicitly_wait(30)
+        self._accept_cookies_policy()
+        logging.info("Cookies accepted")
+        time.sleep(2)
+
+        # doing authorisation
+        wait = WebDriverWait(self._driver, 10)  # wait up to 10 seconds
+        element = wait.until(EC.element_to_be_clickable((By.XPATH, self._login_form_locator)))
+        self._get_element(self._login_form_locator).click()
         logging.info(f"Input login: {self._login}")
-        self.login_input = self._login
+        self._get_element(self._login_input_locator).send_keys(self._login)
         logging.info(f"Login confirmed")
-        self.login_continue_button.click()
-        self.password_input = self._password
+
+        # opening next page with password and captcha
+        self._get_element(self._login_continue_locator).click()
+        self._get_element(self._password_input_locator).send_keys(self._password)
         logging.info(f"Password confirmed")
+
+        # solving captcha
         self._solve_captcha()
         logging.info(f"Captcha was solved")
+
+        # check is input credenatials correct
         assert self._is_credentials_is_correct(), "Wrong credentials"
 
-    def run(self) -> NoReturn:
-        self.do_authorisation()
         logging.info(f"Opening latest bill page")
-        self.latest_bill_button.click()
+        self._get_element(self._latest_bill_button_locator).click()
+
+        # need to close bill explainer if it appears
         logging.info(f"Closing bill exaplainer")
         self._close_bill_explainer()
         logging.info(f"Downloading latest bill")
@@ -108,6 +107,6 @@ class VirginMediaPage(BasePage):
         #click class="QSIWebResponsiveDialog-Layout1-SI_ezf2xkiB7FZrb38_close-btn"
 
         time.sleep(2)
-        self.donwload_pdf_button.click()
+        self._get_element(self._download_pdf_button_locator).click()
         time.sleep(2)
 
